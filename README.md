@@ -26,13 +26,13 @@ Independent OMFS images, malformed objects, cyclic extents and inconsistent free
 
 ## 7. Technical references and provenance
 
-- [Design and qualification reference (PDF)](docs/OMFS.pdf) — design-stage reference only, with [editable page source](docs/OMFS.pages); not an operational manual.
+- [Technical reference (PDF)](docs/OMFS.pdf) — original-format technical reference with historical appendices and [PDF stream source](docs/OMFS.pdfstreams); not an operational manual.
 
 - [Pinned central source baseline](https://github.com/Infiltrator-Projects/Filesystems/tree/101026021d9088d80b7f0f472d9061f0e2c688a3/native/filesystems/omfs)
 - [Native design](native/filesystems/omfs/DESIGN.md)
 - [Migration and qualification plan](MIGRATION_STATUS.md)
-- [Original-format reference source](docs/OMFS.pages) and [PDF](docs/OMFS.pdf)
+- [Original-format reference source](docs/OMFS.pdfstreams) and [PDF](docs/OMFS.pdf)
 - [Project philosophy](docs/PHILOSOPHY.md)
 - [Common ABI](https://github.com/Infiltrator-Projects/Libraries)
 
-Preserve inherited notices and licences on source extraction; new project-authored code uses GPL-3.0-or-later. The original-format reference is available here; installation of the PDF remains pending. Central code or test results are not evidence of an independent provider.
+Preserve inherited notices and licences on source extraction; new project-authored code uses GPL-3.0-or-later. The [technical reference](docs/OMFS-TECHNICAL-REFERENCE.md) expands original-format research. The PDF includes both earlier documents as historical appendices; installation remains pending. Central code or test results are not evidence of an independent provider.

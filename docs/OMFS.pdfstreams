@@ -1,0 +1,551 @@
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.01 0.52 0.56 rg 50 747 116 5 re f
+1 1 1 rg BT /F2 11 Tf 50 807 Td (INFILTRATOR / FILESYSTEM ENGINEERING REFERENCE) Tj ET
+BT /F2 21 Tf 50 775 Td (OMFS - technical reference) Tj ET
+0.05 0.13 0.22 rg BT /F2 16 Tf 50 715 Td (Historical context and format scope) Tj ET
+BT /F1 11 Tf 15 TL 50 685 Td
+(SonicBlue's Optimized MPEG File System was used by ReplayTV recorders and the) Tj
+T* (Rio Karma portable player. The format is organised around streaming media) Tj
+T* (workloads, extent allocation and hash-table directories. It does not) Tj
+T* (interpret MPEG compression or require files to be MPEG streams. Its) Tj
+T* (device-specific design omits some general-purpose Unix metadata semantics; a) Tj
+T* (host driver may synthesize ownership and permission values. The following) Tj
+T* (description uses the independently reverse-engineered format documented by) Tj
+T* (the Linux OMFS implementation and omfsprogs. The original vendor) Tj
+T* (specification is not assumed to be available.) Tj
+ET
+0.05 0.13 0.22 rg BT /F1 9 Tf 50 42 Td (Engineering chapter 1 | Original format, not provider qualification) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.01 0.52 0.56 rg 50 747 116 5 re f
+1 1 1 rg BT /F2 11 Tf 50 807 Td (INFILTRATOR / FILESYSTEM ENGINEERING REFERENCE) Tj ET
+BT /F2 21 Tf 50 775 Td (OMFS - technical reference) Tj ET
+0.05 0.13 0.22 rg BT /F2 16 Tf 50 715 Td (Physical geometry) Tj ET
+BT /F1 11 Tf 15 TL 50 685 Td
+(OMFS distinguishes ordinary allocation blocks from system blocks carrying) Tj
+T* (metadata. They share the same block-address namespace, even if the metadata) Tj
+T* (object uses fewer bytes than an allocated data block. A physical allocation) Tj
+T* (address is multiplied by the normal block size, not the smaller system-record) Tj
+T* (size. Unused space in a smaller system block is not a separate free) Tj
+T* (allocation. The known device profiles commonly use 2048 to 8192-byte blocks;) Tj
+T* (independently verify each supported block-size and mirror configuration.) Tj
+T* (Bound the partition offset, address and length before reading. Metadata and) Tj
+T* (allocation fields are stored big-endian.) Tj
+ET
+0.05 0.13 0.22 rg BT /F1 9 Tf 50 42 Td (Engineering chapter 2 | Original format, not provider qualification) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.01 0.52 0.56 rg 50 747 116 5 re f
+1 1 1 rg BT /F2 11 Tf 50 807 Td (INFILTRATOR / FILESYSTEM ENGINEERING REFERENCE) Tj ET
+BT /F2 21 Tf 50 775 Td (OMFS - technical reference) Tj ET
+0.05 0.13 0.22 rg BT /F2 16 Tf 50 715 Td (Superblock field inventory) Tj ET
+BT /F1 11 Tf 15 TL 50 685 Td
+(The superblock's identifying fields begin at byte 256. The 64-bit root-block) Tj
+T* (address is at 256, total allocation-block count at 264, magic 0xC2993D87 at) Tj
+T* (272, block bytes at 276, metadata mirror count at 280 and system-block bytes) Tj
+T* (at 284. Read at least 288 bytes before interpreting these fields. Require) Tj
+T* (plausible block size, consistent system-block size, a bounded root address) Tj
+T* (and a volume extent within the supplied image. The root metadata record) Tj
+T* (independently repeats important geometry; disagreement must not be silently) Tj
+T* (resolved by picking the more convenient value.) Tj
+ET
+0.05 0.13 0.22 rg BT /F1 9 Tf 50 42 Td (Engineering chapter 3 | Original format, not provider qualification) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.01 0.52 0.56 rg 50 747 116 5 re f
+1 1 1 rg BT /F2 11 Tf 50 807 Td (INFILTRATOR / FILESYSTEM ENGINEERING REFERENCE) Tj ET
+BT /F2 21 Tf 50 775 Td (OMFS - technical reference) Tj ET
+0.05 0.13 0.22 rg BT /F2 16 Tf 50 715 Td (System header and integrity) Tj ET
+BT /F1 11 Tf 15 TL 50 685 Td
+(A system-block header is 24 bytes: self block address at 0 \(64 bits\), body) Tj
+T* (size at 8 \(32 bits\), CRC-CCITT at 12 \(16 bits\), two reserved bytes at 14,) Tj
+T* (version at 16, record type at 17, magic 0xD2 at 18, XOR check at 19 and) Tj
+T* (reserved word at 20. The XOR is over the preceding 19 header bytes. Body CRC) Tj
+T* (covers the declared body bytes after the header. Verify body size against the) Tj
+T* (system-block boundary, identity and type before using pointers. The known) Tj
+T* (version is 1. Consecutive mirrored metadata blocks must be checked) Tj
+T* (independently; validate identity conventions and do not treat matching copies) Tj
+T* (as proof that their contents are valid.) Tj
+ET
+0.05 0.13 0.22 rg BT /F1 9 Tf 50 42 Td (Engineering chapter 4 | Original format, not provider qualification) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.01 0.52 0.56 rg 50 747 116 5 re f
+1 1 1 rg BT /F2 11 Tf 50 807 Td (INFILTRATOR / FILESYSTEM ENGINEERING REFERENCE) Tj ET
+BT /F2 21 Tf 50 775 Td (OMFS - technical reference) Tj ET
+0.05 0.13 0.22 rg BT /F2 16 Tf 50 715 Td (Root block and bitmap) Tj ET
+BT /F1 11 Tf 15 TL 50 685 Td
+(The root block starts with the common header. Its 64-bit total block count is) Tj
+T* (at offset 32, root-directory address at 40, allocation-bitmap address at 48,) Tj
+T* (block bytes at 56 and cluster-size setting at 60. Mirror count occupies eight) Tj
+T* (bytes at 64 and the 256-byte volume label begins at 72. Validate root and) Tj
+T* (bitmap addresses and both copies of geometry. Compute bitmap capacity from) Tj
+T* (volume blocks, excluding padding bits and any reserved metadata copies.) Tj
+T* (Preserve the device's bitmap bit numbering and allocation convention; verify) Tj
+T* (against an independent formatted image before enabling writes.) Tj
+ET
+0.05 0.13 0.22 rg BT /F1 9 Tf 50 42 Td (Engineering chapter 5 | Original format, not provider qualification) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.01 0.52 0.56 rg 50 747 116 5 re f
+1 1 1 rg BT /F2 11 Tf 50 807 Td (INFILTRATOR / FILESYSTEM ENGINEERING REFERENCE) Tj ET
+BT /F2 21 Tf 50 775 Td (OMFS - technical reference) Tj ET
+0.05 0.13 0.22 rg BT /F2 16 Tf 50 715 Td (Inodes and object identity) Tj ET
+BT /F1 11 Tf 15 TL 50 685 Td
+(A file or directory occupies a metadata object with the 24-byte common) Tj
+T* (header. Its parent address is at 24, next sibling address at 32 and 64-bit) Tj
+T* (timestamp in milliseconds at 40. Object type byte at 83 distinguishes D for) Tj
+T* (directory and F for file. Reserved fields must be preserved. The 256-byte) Tj
+T* (filename field begins at 152 and logical file size at 408. Normal,) Tj
+T* (continuation and system headers use type bytes e, c and s respectively. The) Tj
+T* (object's self address is its storage identity; there is no separate) Tj
+T* (conventional Unix inode-number table. Names must fit their fixed storage) Tj
+T* (without unbounded string scanning.) Tj
+ET
+0.05 0.13 0.22 rg BT /F1 9 Tf 50 42 Td (Engineering chapter 6 | Original format, not provider qualification) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.01 0.52 0.56 rg 50 747 116 5 re f
+1 1 1 rg BT /F2 11 Tf 50 807 Td (INFILTRATOR / FILESYSTEM ENGINEERING REFERENCE) Tj ET
+BT /F2 21 Tf 50 775 Td (OMFS - technical reference) Tj ET
+0.05 0.13 0.22 rg BT /F2 16 Tf 50 715 Td (Hashed directory algorithms) Tj ET
+BT /F1 11 Tf 15 TL 50 685 Td
+(Directory bucket pointers start at byte 0x1B8 within the directory system) Tj
+T* (block; each pointer is eight bytes. Derive bucket count from the validated) Tj
+T* (available directory-record size. An all-ones pointer denotes an empty bucket.) Tj
+T* (Compute the exact original name hash and bucket reduction; walk the sibling) Tj
+T* (chain comparing names and checking each child's parent identity. An insertion) Tj
+T* (links a new child at the bucket head, preserving the old head as its sibling.) Tj
+T* (Deletion updates the bucket head or predecessor; moving a child must also) Tj
+T* (update its parent. Bound chain length and reject cycles. Use the original) Tj
+T* (hash implementation as a normative compatibility cross-check rather than) Tj
+T* (substituting a modern hash.) Tj
+ET
+0.05 0.13 0.22 rg BT /F1 9 Tf 50 42 Td (Engineering chapter 7 | Original format, not provider qualification) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.01 0.52 0.56 rg 50 747 116 5 re f
+1 1 1 rg BT /F2 11 Tf 50 807 Td (INFILTRATOR / FILESYSTEM ENGINEERING REFERENCE) Tj ET
+BT /F2 21 Tf 50 775 Td (OMFS - technical reference) Tj ET
+0.05 0.13 0.22 rg BT /F2 16 Tf 50 715 Td (Extent tables and continuation) Tj ET
+BT /F1 11 Tf 15 TL 50 685 Td
+(The first extent table starts at inode byte 0x1D0; continuation records place) Tj
+T* (their table at 0x40. A table has a 64-bit next pointer at 0, 32-bit record) Tj
+T* (count at 8, reserved word at 12 and entries starting at 16. Each entry is two) Tj
+T* (64-bit values: physical first block and run block count. The final entry is a) Tj
+T* (terminator: all-ones first address and the ones-complement of the total) Tj
+T* (number of data blocks described by that table. Validate the count against) Tj
+T* (actual record capacity, recompute the sum and follow a continuation only) Tj
+T* (after checking its system header. Reject repeated continuation pointers,) Tj
+T* (out-of-range runs and overlapping physical ownership.) Tj
+ET
+0.05 0.13 0.22 rg BT /F1 9 Tf 50 42 Td (Engineering chapter 8 | Original format, not provider qualification) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.01 0.52 0.56 rg 50 747 116 5 re f
+1 1 1 rg BT /F2 11 Tf 50 807 Td (INFILTRATOR / FILESYSTEM ENGINEERING REFERENCE) Tj ET
+BT /F2 21 Tf 50 775 Td (OMFS - technical reference) Tj ET
+0.05 0.13 0.22 rg BT /F2 16 Tf 50 715 Td (Worked byte mapping) Tj ET
+BT /F1 11 Tf 15 TL 50 685 Td
+(With 4096-byte blocks, consider an extent at block 100 of length 3 and) Tj
+T* (another at block 900 of length 5. The first covers logical bytes 0 through) Tj
+T* (12287. Logical byte 15000 falls 2712 bytes into the second extent, so the) Tj
+T* (physical byte offset is 900 times 4096 plus 2712, or 3689112. Logical offsets) Tj
+T* (beyond the file size are not visible even if allocation extends further. A) Tj
+T* (continuation header is metadata and is never delivered as file data. Missing) Tj
+T* (or invalid mapping inside a declared file is corruption, not permission to) Tj
+T* (expose unallocated media.) Tj
+ET
+0.05 0.13 0.22 rg BT /F1 9 Tf 50 42 Td (Engineering chapter 9 | Original format, not provider qualification) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.01 0.52 0.56 rg 50 747 116 5 re f
+1 1 1 rg BT /F2 11 Tf 50 807 Td (INFILTRATOR / FILESYSTEM ENGINEERING REFERENCE) Tj ET
+BT /F2 21 Tf 50 775 Td (OMFS - technical reference) Tj ET
+0.05 0.13 0.22 rg BT /F2 16 Tf 50 715 Td (Mutation, relocation and recovery) Tj ET
+BT /F1 11 Tf 15 TL 50 685 Td
+(Allocation must reserve the whole required run and system-block mirror group) Tj
+T* (before metadata publication. Data extension can grow the final run if) Tj
+T* (adjacent blocks are free, or append another extent and possibly allocate a) Tj
+T* (continuation table. Maintain the terminator and file length independently. A) Tj
+T* (defragmenter copies and verifies source bytes into an available destination) Tj
+T* (before publishing new mapping records. The format's CRC and mirrored metadata) Tj
+T* (help detect damage but are not a general transactional journal. Validate) Tj
+T* (interrupted-update ordering, mirror repair and allocation ownership against) Tj
+T* (independent device images before writable qualification.) Tj
+ET
+0.05 0.13 0.22 rg BT /F1 9 Tf 50 42 Td (Engineering chapter 10 | Original format, not provider qualification) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.01 0.52 0.56 rg 50 747 116 5 re f
+1 1 1 rg BT /F2 11 Tf 50 807 Td (INFILTRATOR / FILESYSTEM ENGINEERING REFERENCE) Tj ET
+BT /F2 21 Tf 50 775 Td (OMFS - technical reference) Tj ET
+0.05 0.13 0.22 rg BT /F2 16 Tf 50 715 Td (Reference and test requirements) Tj ET
+BT /F1 11 Tf 15 TL 50 685 Td
+(Independent references: Linux OMFS disk-format notes at) Tj
+T* (https://docs.kernel.org/6.12/filesystems/omfs.html and implementation at) Tj
+T* (https://github.com/torvalds/linux/tree/v6.12/fs/omfs . Original) Tj
+T* (reverse-engineering utilities: https://bobcopeland.com/karma/ . Test) Tj
+T* (differing metadata and allocation block sizes, all-ones sentinels, collision) Tj
+T* (chains, continuation overflow, mirror disagreement, CRC failure, invalid) Tj
+T* (total counts and partial last extents. Compare files against independent) Tj
+T* (device images and omfsck. The exact directory hash, bitmap order, checksum) Tj
+T* (initialisation and mirror write policy need fixture-level confirmation before) Tj
+T* (independent writer compatibility is declared. The following historical) Tj
+T* (appendices retain earlier provider status without claiming new code or) Tj
+T* (qualification.) Tj
+ET
+0.05 0.13 0.22 rg BT /F1 9 Tf 50 42 Td (Engineering chapter 11 | Original format, not provider qualification) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.01 0.52 0.56 rg 50 747 116 5 re f
+1 1 1 rg BT /F2 11 Tf 50 807 Td (INFILTRATOR / FILESYSTEM ENGINEERING REFERENCE) Tj ET
+BT /F2 21 Tf 50 775 Td (OMFS - technical reference) Tj ET
+0.05 0.13 0.22 rg BT /F2 16 Tf 50 715 Td (Historical reference appendices) Tj ET
+BT /F1 11 Tf 15 TL 50 685 Td
+(The following pages preserve both previous documents. Their dated) Tj
+T* (implementation statements are historical evidence, not a qualification claim.) Tj
+ET
+0.05 0.13 0.22 rg BT /F1 9 Tf 50 42 Td (Engineering chapter 12 | Original format, not provider qualification) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.04 0.54 0.60 rg 50 747 115 4 re f
+0.78 0.82 0.86 RG 0.6 w 50 50 m 545 50 l S
+BT /F2 9 Tf 0.62 0.86 0.90 rg 1 0 0 1 50 801 Tm (INFILTRATOR / ORIGINAL FILESYSTEM HISTORY AND DESIGN) Tj ET
+BT /F2 19 Tf 1 1 1 rg 1 0 0 1 50 771 Tm (Optimised MPEG File System) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 34 Tm (Filesystem-OMFS / engineering reference) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 512 34 Tm (PAGE 01) Tj ET
+BT /F2 14 Tf 0.02 0.45 0.50 rg 1 0 0 1 50 711 Tm (HISTORY / ORIGINAL DESIGN / DISK FORMAT) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 676 Tm (Optimised MPEG File System used on supported media appliances. This is a) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 660 Tm (design contract, not a claim of implemented capabilities.) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 630 Tm (Native provider design and original-format reference. No independent runtime) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 614 Tm (provider has yet been qualified.) Tj ET
+BT /F2 11 Tf 0.02 0.50 0.55 rg 1 0 0 1 50 584 Tm (CONCEPTUAL MEDIA MAP - NOT A SECTOR MAP) Tj ET
+0.05 0.36 0.47 rg 50 507 238 62 re f
+BT /F2 11 Tf 1 1 1 rg 1 0 0 1 62 533 Tm (Superblock) Tj ET
+0.05 0.36 0.47 rg 301 507 238 62 re f
+BT /F2 11 Tf 1 1 1 rg 1 0 0 1 313 533 Tm (Root / bitmap) Tj ET
+0.05 0.36 0.47 rg 50 431 238 62 re f
+BT /F2 11 Tf 1 1 1 rg 1 0 0 1 62 457 Tm (Object records) Tj ET
+0.05 0.36 0.47 rg 301 431 238 62 re f
+BT /F2 11 Tf 1 1 1 rg 1 0 0 1 313 457 Tm (Extent chains) Tj ET
+BT /F2 10 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 404 Tm (History / architecture / allocation / integrity / implementation / tests) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.04 0.54 0.60 rg 50 747 115 4 re f
+0.78 0.82 0.86 RG 0.6 w 50 50 m 545 50 l S
+BT /F2 9 Tf 0.62 0.86 0.90 rg 1 0 0 1 50 801 Tm (INFILTRATOR / ORIGINAL FILESYSTEM HISTORY AND DESIGN) Tj ET
+BT /F2 19 Tf 1 1 1 rg 1 0 0 1 50 771 Tm (Optimised MPEG File System) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 34 Tm (Filesystem-OMFS / engineering reference) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 512 34 Tm (PAGE 02) Tj ET
+BT /F2 14 Tf 0.02 0.45 0.50 rg 1 0 0 1 50 711 Tm (HISTORICAL CHRONOLOGY) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 676 Tm (OMFS was used on specialised media appliances, including devices in the) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 660 Tm (ReplayTV/Rio Karma ecosystem. It is a disk filesystem, not a general MPEG) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 644 Tm (container or media-file decoder.) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 614 Tm (The historic format and the InfiltratorOS implementation are distinct. An) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 598 Tm (external driver or archival utility is evidence, not a qualified production) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 582 Tm (provider.) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 552 Tm (https://github.com/torvalds/linux/tree/v6.12/fs/omfs) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.04 0.54 0.60 rg 50 747 115 4 re f
+0.78 0.82 0.86 RG 0.6 w 50 50 m 545 50 l S
+BT /F2 9 Tf 0.62 0.86 0.90 rg 1 0 0 1 50 801 Tm (INFILTRATOR / ORIGINAL FILESYSTEM HISTORY AND DESIGN) Tj ET
+BT /F2 19 Tf 1 1 1 rg 1 0 0 1 50 771 Tm (Optimised MPEG File System) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 34 Tm (Filesystem-OMFS / engineering reference) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 512 34 Tm (PAGE 03) Tj ET
+BT /F2 14 Tf 0.02 0.45 0.50 rg 1 0 0 1 50 711 Tm (ORIGINAL ON-DISK ARCHITECTURE) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 676 Tm (Volume/superblock geometry, allocation bitmap, native object/inode records,) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 660 Tm (directory structures and file extent mapping. The single native C/C++ engine) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 644 Tm (owns these format semantics; consumers provide bounded Common V2 host) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 628 Tm (services, never competing parsers.) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.04 0.54 0.60 rg 50 747 115 4 re f
+0.78 0.82 0.86 RG 0.6 w 50 50 m 545 50 l S
+BT /F2 9 Tf 0.62 0.86 0.90 rg 1 0 0 1 50 801 Tm (INFILTRATOR / ORIGINAL FILESYSTEM HISTORY AND DESIGN) Tj ET
+BT /F2 19 Tf 1 1 1 rg 1 0 0 1 50 771 Tm (Optimised MPEG File System) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 34 Tm (Filesystem-OMFS / engineering reference) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 512 34 Tm (PAGE 04) Tj ET
+BT /F2 14 Tf 0.02 0.45 0.50 rg 1 0 0 1 50 711 Tm (ALLOCATION, INTEGRITY AND RECOVERY) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 676 Tm (Validate allocation ownership, object references, record boundaries and file) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 660 Tm (extents; reject cycles, impossible geometry and unsupported variants. Define) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 644 Tm (data and metadata ordering before writes. All arithmetic, offsets and lengths) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 628 Tm (are checked before I/O. Writable operations require exclusive access,) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 612 Tm (explicit ordering, flush and interruption/recovery evidence. Read-only) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 596 Tm (operations leave the medium unchanged.) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.04 0.54 0.60 rg 50 747 115 4 re f
+0.78 0.82 0.86 RG 0.6 w 50 50 m 545 50 l S
+BT /F2 9 Tf 0.62 0.86 0.90 rg 1 0 0 1 50 801 Tm (INFILTRATOR / ORIGINAL FILESYSTEM HISTORY AND DESIGN) Tj ET
+BT /F2 19 Tf 1 1 1 rg 1 0 0 1 50 771 Tm (Optimised MPEG File System) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 34 Tm (Filesystem-OMFS / engineering reference) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 512 34 Tm (PAGE 05) Tj ET
+BT /F2 14 Tf 0.02 0.45 0.50 rg 1 0 0 1 50 711 Tm (DISK READ PATH / SOURCE EVIDENCE) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 676 Tm (Original editable source) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 660 Tm (\(https://github.com/Infiltrator-Projects/Filesystems/blob/101026021d9088d80b7) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 644 Tm (f0f472d9061f0e2c688a3/native/filesystems/omfs/linux/omfs_fs.h\) \(blob) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 628 Tm (1ff6b9e412...\). The pinned header records big-endian superblock magic) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 612 Tm (0xc2993d87, inode marker 0xd2, directory and extent offsets 0x1b8/0x1d0 and) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 596 Tm (continuation offset 0x40, with original implementation bounds of 8192-byte) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 580 Tm (blocks and 8-block clusters. Treat these as source baseline, not proof of) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 564 Tm (every original-format limit. Validate root, object types, metadata headers,) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 548 Tm (continuation chains and allocation ownership. Never serialize pointer-bearing) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 532 Tm (host objects as disk records.) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.04 0.54 0.60 rg 50 747 115 4 re f
+0.78 0.82 0.86 RG 0.6 w 50 50 m 545 50 l S
+BT /F2 9 Tf 0.62 0.86 0.90 rg 1 0 0 1 50 801 Tm (INFILTRATOR / ORIGINAL FILESYSTEM HISTORY AND DESIGN) Tj ET
+BT /F2 19 Tf 1 1 1 rg 1 0 0 1 50 771 Tm (Optimised MPEG File System) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 34 Tm (Filesystem-OMFS / engineering reference) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 512 34 Tm (PAGE 06) Tj ET
+BT /F2 14 Tf 0.02 0.45 0.50 rg 1 0 0 1 50 711 Tm (COMMON V2 IMPLEMENTATION BOUNDARY) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 676 Tm (Only infiltrator_filesystem_api_v2 is public. Target the genuine) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 660 Tm (PROBE/MOUNT/UNMOUNT/STAT/LIST/READ operations first; negotiate actual) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 644 Tm (supported operation masks. VOLUME, METADATA and DEFRAG operations \(including) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 628 Tm (MAP, PLAN, EXECUTE, VERIFY, RECOVER\) are individually qualified or refused.) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 612 Tm (Test Media uses the same provider's qualified format and namespace) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 596 Tm (operations. No FUSE, legacy ABI, private driver or kernel proxy. Hosted and) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 580 Tm (import-free freestanding profiles share the format engine, with generic) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 564 Tm (environment-specific host services.) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.04 0.54 0.60 rg 50 747 115 4 re f
+0.78 0.82 0.86 RG 0.6 w 50 50 m 545 50 l S
+BT /F2 9 Tf 0.62 0.86 0.90 rg 1 0 0 1 50 801 Tm (INFILTRATOR / ORIGINAL FILESYSTEM HISTORY AND DESIGN) Tj ET
+BT /F2 19 Tf 1 1 1 rg 1 0 0 1 50 771 Tm (Optimised MPEG File System) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 34 Tm (Filesystem-OMFS / engineering reference) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 512 34 Tm (PAGE 07) Tj ET
+BT /F2 14 Tf 0.02 0.45 0.50 rg 1 0 0 1 50 711 Tm (ENGINEERING ACCEPTANCE / HOST I/O) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 676 Tm (- A valid CORE descriptor with a real PROBE is mandatory. Every optional) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 660 Tm (operation has its own capability bit and non-null qualified callback;) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 644 Tm (unavailable operations have neither. Recognised format, unsupported feature,) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 628 Tm (corruption, host I/O failure and stale handles remain distinct outcomes.) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 598 Tm (- Use Common's sector-aligned bounded byte helpers. Validate partition) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 582 Tm (extent, logical/physical sector geometry and maximum transfer before reading.) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 566 Tm (Serialize overlapping read/modify/write sectors; request explicit flush) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 550 Tm (barriers. Never infer exclusivity from flags alone; require real exclusive) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 534 Tm (unmounted ownership before formatting or raw mutation. Require the Common) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 518 Tm (entropy service when the format needs a unique identity.) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.04 0.54 0.60 rg 50 747 115 4 re f
+0.78 0.82 0.86 RG 0.6 w 50 50 m 545 50 l S
+BT /F2 9 Tf 0.62 0.86 0.90 rg 1 0 0 1 50 801 Tm (INFILTRATOR / ORIGINAL FILESYSTEM HISTORY AND DESIGN) Tj ET
+BT /F2 19 Tf 1 1 1 rg 1 0 0 1 50 771 Tm (Optimised MPEG File System) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 34 Tm (Filesystem-OMFS / engineering reference) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 512 34 Tm (PAGE 08) Tj ET
+BT /F2 14 Tf 0.02 0.45 0.50 rg 1 0 0 1 50 711 Tm (CONSUMERS / RELOCATION / TEST MEDIA) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 676 Tm (- Qualify hosted and import-free freestanding profiles separately; enforce) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 660 Tm (module identity and trust, exact export set and actual packaged bytes. BOOT) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 644 Tm (and kernel are generic loaders; BOOT uses the same file in) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 628 Tm (/EFI/InfiltratorOS/BOOT/drivers_x64/, with the installed canonical copy in) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 612 Tm (/System/Filesystems/. No per-format .ko/.efi, FUSE, proxy, legacy ABI,) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 596 Tm (external formatter or consumer-side parsing substitutes for the engine.) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 566 Tm (- Test Media must format and populate through actual V2 FORMAT/CREATE/WRITE) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 550 Tm (operations; an independent formatter/reader may be a test oracle only, never) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 534 Tm (production fallback. Defragmentation maps, plans, execution, verification and) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 518 Tm (recovery require independent proof of ownership, data preservation and) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 502 Tm (interruption safety. Where not implemented they remain absent.) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.04 0.54 0.60 rg 50 747 115 4 re f
+0.78 0.82 0.86 RG 0.6 w 50 50 m 545 50 l S
+BT /F2 9 Tf 0.62 0.86 0.90 rg 1 0 0 1 50 801 Tm (INFILTRATOR / ORIGINAL FILESYSTEM HISTORY AND DESIGN) Tj ET
+BT /F2 19 Tf 1 1 1 rg 1 0 0 1 50 771 Tm (Optimised MPEG File System) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 34 Tm (Filesystem-OMFS / engineering reference) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 512 34 Tm (PAGE 09) Tj ET
+BT /F2 14 Tf 0.02 0.45 0.50 rg 1 0 0 1 50 711 Tm (VALIDATION, RECOVERY AND COMPATIBILITY) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 676 Tm (Use independent OMFS images with multiple extents and directories, malformed) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 660 Tm (object pointers, allocation conflicts and truncated media. Compare file bytes) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 644 Tm (against an independent oracle, hash unchanged read-only images, inject short) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 628 Tm (I/O, corruption and interruption; validate exact published module separately) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 612 Tm (in BOOT and kernel. Use disposable media only. No new independent binary or) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 596 Tm (test pass is claimed.) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.04 0.54 0.60 rg 50 747 115 4 re f
+0.78 0.82 0.86 RG 0.6 w 50 50 m 545 50 l S
+BT /F2 9 Tf 0.62 0.86 0.90 rg 1 0 0 1 50 801 Tm (INFILTRATOR / ORIGINAL FILESYSTEM HISTORY AND DESIGN) Tj ET
+BT /F2 19 Tf 1 1 1 rg 1 0 0 1 50 771 Tm (Optimised MPEG File System) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 34 Tm (Filesystem-OMFS / engineering reference) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 512 34 Tm (PAGE 10) Tj ET
+BT /F2 14 Tf 0.02 0.45 0.50 rg 1 0 0 1 50 711 Tm (BUILD, INSTALLATION AND RELEASE) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 676 Tm (The target installation is /System/Filesystems/OMFS.so and) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 660 Tm (/System/Resources/Documentation/Filesystem-OMFS.pdf. Neither file is) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 644 Tm (currently distributed by this repository. Once the implementation qualifies,) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 628 Tm (the intended release is a portable amd64 DEB and CPU-native source-first RUN,) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 612 Tm (with GitHub's automatic source archive. No install or build command is) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 596 Tm (advertised before an executable build exists.) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 566 Tm (- New build and implementation code is native C/C++ and shell as appropriate,) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 550 Tm (no Python. The generic amd64 DEB and CPU-native source-downloading RUN are) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 534 Tm (the only manually published release assets; GitHub generates source archives.) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 518 Tm (RUN fetches exact versioned source and pinned Common dependency, verifies) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 502 Tm (integrity, compiles natively and installs the selected package; no source) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 486 Tm (archive or DEB embedded. Release immutable exact-main qualification only. No) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 470 Tm (release exists yet.) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 749 595 93 re f
+0.04 0.54 0.60 rg 50 747 115 4 re f
+0.78 0.82 0.86 RG 0.6 w 50 50 m 545 50 l S
+BT /F2 9 Tf 0.62 0.86 0.90 rg 1 0 0 1 50 801 Tm (INFILTRATOR / ORIGINAL FILESYSTEM HISTORY AND DESIGN) Tj ET
+BT /F2 19 Tf 1 1 1 rg 1 0 0 1 50 771 Tm (Optimised MPEG File System) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 34 Tm (Filesystem-OMFS / engineering reference) Tj ET
+BT /F1 8 Tf 0.07 0.16 0.23 rg 1 0 0 1 512 34 Tm (PAGE 11) Tj ET
+BT /F2 14 Tf 0.02 0.45 0.50 rg 1 0 0 1 50 711 Tm (PRIMARY SOURCES AND IMPLEMENTATION STATUS) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 676 Tm (https://github.com/torvalds/linux/tree/v6.12/fs/omfs) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 646 Tm () Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 630 Tm (https://github.com/Infiltrator-Projects/Filesystems/tree/101026021d9088d80b7f) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 614 Tm (0f472d9061f0e2c688a3/native/filesystems/omfs) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 584 Tm () Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 568 Tm (https://github.com/Infiltrator-Projects/Libraries/blob/main/docs/FILESYSTEM_C) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 552 Tm (OMMON_ABI_V2.md) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 522 Tm (Independent OMFS images, malformed objects, cyclic extents and inconsistent) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 506 Tm (free-space accounting. Compare independent payloads and unchanged-image) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 490 Tm (hashes; inject truncation, corruption and I/O faults. Establish) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 474 Tm (exact-revision ABI, hosted and import-free freestanding qualification, then) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 458 Tm (independently test BOOT and kernel integration. No local build, runtime or) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 442 Tm (packaging qualification is claimed.) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 412 Tm (Source extraction, implementation and release qualification remain) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 396 Tm (outstanding. This is a source-backed engineering reference, not a complete) Tj ET
+BT /F1 10.2 Tf 0.07 0.16 0.23 rg 1 0 0 1 50 380 Tm (original specification.) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 750 595 92 re f
+0.03 0.53 0.58 rg 50 747 120 4 re f
+0.75 0.82 0.86 RG .7 w 50 49 m 545 49 l S
+BT /F2 9 Tf 0.62 0.88 0.91 rg 1 0 0 1 50 803 Tm (INFILTRATOR / FILESYSTEM DESIGN & QUALIFICATION) Tj ET
+BT /F2 17 Tf 1 1 1 rg 1 0 0 1 50 773 Tm (OMFS - format and architecture) Tj ET
+BT /F1 8 Tf 0.34 0.4 0.44 rg 1 0 0 1 50 34 Tm (Filesystem-OMFS | Design-stage reference | b01277f1825f) Tj ET
+BT /F1 8 Tf 0.34 0.4 0.44 rg 1 0 0 1 505 34 Tm (PAGE 01) Tj ET
+BT /F2 12 Tf 0.02 0.48 0.52 rg 1 0 0 1 50 706 Tm (STATUS / DESIGN CONTRACT) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 681 Tm (This repository is at the design stage. No independent runtime provider, installation) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 665 Tm (package or qualified filesystem operations are claimed. This document is not an) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 649 Tm (installation or user manual.) Tj ET
+BT /F2 12 Tf 0.02 0.48 0.52 rg 1 0 0 1 50 614 Tm (Format scope) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 589 Tm (Optimised MPEG File System used on supported media appliances. This is a design) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 573 Tm (contract, not a claim of implemented capabilities.) Tj ET
+BT /F2 12 Tf 0.02 0.48 0.52 rg 1 0 0 1 50 538 Tm (On-disk structures and ownership) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 513 Tm (Volume/superblock geometry, allocation bitmap, native object/inode records, directory) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 497 Tm (structures and file extent mapping. The single native C/C++ engine owns these format) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 481 Tm (semantics; consumers provide bounded Common V2 host services, never competing) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 465 Tm (parsers.) Tj ET
+BT /F2 11 Tf 0.02 0.48 0.52 rg 1 0 0 1 50 430 Tm (Conceptual provider boundary \(planned\)) Tj ET
+0.91 0.95 0.96 rg 50 385 110 30 re f
+BT /F2 9 Tf 0.08 0.16 0.23 rg 1 0 0 1 57 396 Tm (Native media) Tj ET
+0.03 0.53 0.58 RG 1 w 162 400 m 176 400 l S
+0.91 0.95 0.96 rg 178 385 110 30 re f
+BT /F2 9 Tf 0.08 0.16 0.23 rg 1 0 0 1 185 396 Tm (Bounded host I/O) Tj ET
+0.03 0.53 0.58 RG 1 w 290 400 m 304 400 l S
+0.91 0.95 0.96 rg 306 385 110 30 re f
+BT /F2 9 Tf 0.08 0.16 0.23 rg 1 0 0 1 313 396 Tm (Native engine) Tj ET
+0.03 0.53 0.58 RG 1 w 418 400 m 432 400 l S
+0.91 0.95 0.96 rg 434 385 110 30 re f
+BT /F2 9 Tf 0.08 0.16 0.23 rg 1 0 0 1 441 396 Tm (Common V2) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 750 595 92 re f
+0.03 0.53 0.58 rg 50 747 120 4 re f
+0.75 0.82 0.86 RG .7 w 50 49 m 545 49 l S
+BT /F2 9 Tf 0.62 0.88 0.91 rg 1 0 0 1 50 803 Tm (INFILTRATOR / FILESYSTEM DESIGN & QUALIFICATION) Tj ET
+BT /F2 17 Tf 1 1 1 rg 1 0 0 1 50 773 Tm (OMFS - integrity and failure) Tj ET
+BT /F1 8 Tf 0.34 0.4 0.44 rg 1 0 0 1 50 34 Tm (Filesystem-OMFS | Design-stage reference | b01277f1825f) Tj ET
+BT /F1 8 Tf 0.34 0.4 0.44 rg 1 0 0 1 505 34 Tm (PAGE 02) Tj ET
+BT /F2 12 Tf 0.02 0.48 0.52 rg 1 0 0 1 50 706 Tm (Integrity and mutation invariants) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 681 Tm (Validate allocation ownership, object references, record boundaries and file extents;) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 665 Tm (reject cycles, impossible geometry and unsupported variants. Define data and) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 649 Tm (metadata ordering before writes. All arithmetic, offsets and lengths are checked) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 633 Tm (before I/O. Writable operations require exclusive access, explicit ordering, flush and) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 617 Tm (interruption/recovery evidence. Read-only operations leave the medium unchanged.) Tj ET
+BT /F2 12 Tf 0.02 0.48 0.52 rg 1 0 0 1 50 582 Tm (Failure and ownership policy) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 557 Tm (Validate before following on-disk references. Unsupported feature combinations,) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 541 Tm (malformed media, unavailable operations and host failures are distinct outcomes.) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 525 Tm (Mutation requires the ownership and ordering conditions in the design; read-only) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 509 Tm (operations must leave the source image unchanged.) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 750 595 92 re f
+0.03 0.53 0.58 rg 50 747 120 4 re f
+0.75 0.82 0.86 RG .7 w 50 49 m 545 49 l S
+BT /F2 9 Tf 0.62 0.88 0.91 rg 1 0 0 1 50 803 Tm (INFILTRATOR / FILESYSTEM DESIGN & QUALIFICATION) Tj ET
+BT /F2 17 Tf 1 1 1 rg 1 0 0 1 50 773 Tm (OMFS - interface and qualification) Tj ET
+BT /F1 8 Tf 0.34 0.4 0.44 rg 1 0 0 1 50 34 Tm (Filesystem-OMFS | Design-stage reference | b01277f1825f) Tj ET
+BT /F1 8 Tf 0.34 0.4 0.44 rg 1 0 0 1 505 34 Tm (PAGE 03) Tj ET
+BT /F2 12 Tf 0.02 0.48 0.52 rg 1 0 0 1 50 706 Tm (Common V2 boundary) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 681 Tm (Only infiltrator_filesystem_api_v2 is public. Target the genuine) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 665 Tm (PROBE/MOUNT/UNMOUNT/STAT/LIST/READ operations first; negotiate actual) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 649 Tm (supported operation masks. VOLUME, METADATA and DEFRAG operations \(including) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 633 Tm (MAP, PLAN, EXECUTE, VERIFY, RECOVER\) are individually qualified or refused.) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 617 Tm (Test Media uses the same provider's qualified format and namespace operations. No) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 601 Tm (FUSE, legacy ABI, private driver or kernel proxy. Hosted and import-free) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 585 Tm (freestanding profiles share the format engine, with generic environment-specific host) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 569 Tm (services.) Tj ET
+BT /F2 12 Tf 0.02 0.48 0.52 rg 1 0 0 1 50 534 Tm (Independent qualification) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 509 Tm (Use independent OMFS images with multiple extents and directories, malformed object) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 493 Tm (pointers, allocation conflicts and truncated media. Compare file bytes against an) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 477 Tm (independent oracle, hash unchanged read-only images, inject short I/O, corruption and) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 461 Tm (interruption; validate exact published module separately in BOOT and kernel. Use) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 445 Tm (disposable media only. No new independent binary or test pass is claimed.) Tj ET
+
+%%Page
+0.05 0.13 0.22 rg 0 750 595 92 re f
+0.03 0.53 0.58 rg 50 747 120 4 re f
+0.75 0.82 0.86 RG .7 w 50 49 m 545 49 l S
+BT /F2 9 Tf 0.62 0.88 0.91 rg 1 0 0 1 50 803 Tm (INFILTRATOR / FILESYSTEM DESIGN & QUALIFICATION) Tj ET
+BT /F2 17 Tf 1 1 1 rg 1 0 0 1 50 773 Tm (OMFS - engineering acceptance) Tj ET
+BT /F1 8 Tf 0.34 0.4 0.44 rg 1 0 0 1 50 34 Tm (Filesystem-OMFS | Design-stage reference | b01277f1825f) Tj ET
+BT /F1 8 Tf 0.34 0.4 0.44 rg 1 0 0 1 505 34 Tm (PAGE 04) Tj ET
+BT /F2 12 Tf 0.02 0.48 0.52 rg 1 0 0 1 50 706 Tm (Engineering and release acceptance) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 681 Tm (- A valid CORE descriptor with a real PROBE is mandatory. Every optional operation) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 665 Tm (has its own capability bit and non-null qualified callback; unavailable operations have) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 649 Tm (neither. Recognised format, unsupported feature, corruption, host I/O failure and) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 633 Tm (stale handles remain distinct outcomes. - Use Common's sector-aligned bounded byte) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 617 Tm (helpers. Validate partition extent, logical/physical sector geometry and maximum) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 601 Tm (transfer before reading. Serialize overlapping read/modify/write sectors; request) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 585 Tm (explicit flush barriers. Never infer exclusivity from flags alone; require real exclusive) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 569 Tm (unmounted ownership before formatting or raw mutation. Require the Common entropy) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 553 Tm (service when the format needs a unique identity. - Qualify hosted and import-free) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 537 Tm (freestanding profiles separately; enforce module identity and trust, exact export set) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 521 Tm (and actual packaged bytes. BOOT and kernel are generic loaders; BOOT uses the same) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 505 Tm (file in /EFI/InfiltratorOS/BOOT/drivers_x64/, with the installed canonical copy in) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 489 Tm (/System/Filesystems/. No per-format .ko/.efi, FUSE, proxy, legacy ABI, external) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 473 Tm (formatter or consumer-side parsing substitutes for the engine. - Test Media must) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 457 Tm (format and populate through actual V2 FORMAT/CREATE/WRITE operations; an) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 441 Tm (independent formatter/reader may be a test oracle only, never production fallback.) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 425 Tm (Defragmentation maps, plans, execution, verification and recovery require independent) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 409 Tm (proof of ownership, data preservation and interruption safety. Where not implemented) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 393 Tm (they remain absent. - New build and implementation code is native C/C++ and shell as) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 377 Tm (appropriate, no Python. The generic amd64 DEB and CPU-native source-downloading) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 361 Tm (RUN are the only manually published release assets; GitHub generates source) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 345 Tm (archives. RUN fetches exact versioned source and pinned Common dependency, verifies) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 329 Tm (integrity, compiles natively and installs the selected package; no source archive or) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 313 Tm (DEB embedded. Release immutable exact-main qualification only. No release exists yet.) Tj ET
+BT /F2 12 Tf 0.02 0.48 0.52 rg 1 0 0 1 50 278 Tm (Source and authority) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 253 Tm (Prepared from README.md and native/filesystems/omfs/DESIGN.md at revision) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 237 Tm (b01277f1825f3f69ce43b8e66bca0d01a47a63eb. The editable Markdown design and) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 221 Tm (migration status are authoritative. No test result, release or implemented capability) Tj ET
+BT /F1 10.5 Tf 0.08 0.16 0.23 rg 1 0 0 1 50 205 Tm (is inferred from this reference.) Tj ET
