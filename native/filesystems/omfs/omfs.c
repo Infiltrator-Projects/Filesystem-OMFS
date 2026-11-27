@@ -70,8 +70,27 @@ static int record(const Volume *v,uint64_t b,uint8_t kind,uint8_t *raw)
     int rc=read_bytes(v,b*v->block,raw,v->sys);if(rc)return rc;
     uint32_t body=be32(raw+8);uint8_t x=0;
     for(unsigned i=0;i<19;++i)x^=raw[i];
-    if(be64(raw)!=b||body!=v->sys-HEADER||raw[16]!=1||raw[17]!=kind||
-       raw[18]!=0xd2||x!=raw[19]||crc16(raw+HEADER,body)!=be16(raw+12))
+    if(be64(raw)!=b||body>v->sys-HEADER||raw[16]!=1||raw[17]!=kind||
+       raw[18]!=0xd2)return IFS_FS_CORRUPT;
+    if(kind=='s'){
+        if(body!=304&&body!=312&&body!=v->sys-HEADER)return IFS_FS_CORRUPT;
+        /* Original omfsprogs 0.1.0 writes a 336-byte mirrored root
+         * structure without computing its CRC/XOR. Admit exactly that
+         * historical representation only with agreeing mirror bytes and
+         * separately validated super/root geometry. Not a general
+         * exemption from metadata integrity checking. */
+        if(body==312&&!be16(raw+12)&&!raw[19]&&v->mirrors>=2){
+            uint8_t mirror[MAX_SYS];
+            for(uint32_t i=1;i<v->mirrors;++i){
+                rc=read_bytes(v,(b+i)*v->block,mirror,HEADER+body);
+                if(rc)return rc;
+                if(!same((const char *)raw,(const char *)mirror,HEADER+body))
+                    return IFS_FS_CORRUPT;
+            }
+            return IFS_FS_OK;
+        }
+    }else if(body!=v->sys-HEADER)return IFS_FS_CORRUPT;
+    if(x!=raw[19]||crc16(raw+HEADER,body)!=be16(raw+12))
         return IFS_FS_CORRUPT;
     return IFS_FS_OK;
 }
@@ -116,9 +135,14 @@ static int open_volume(const IfsFsHostRuntimeV2 *h,Volume *v)
        !v->system||!span(v,v->system,v->mirrors))return IFS_FS_CORRUPT;
     rc=record(v,v->system,'s',raw);if(rc)return rc;
     v->root=be64(raw+40);v->bitmap=be64(raw+48);
+    uint64_t mirrors=be64(raw+64);
+    /* mkomfs historically converts an already big-endian 32-bit count
+     * as a 64-bit field. Accept only the exact known encoding on its
+     * mirrored checksumless system record. */
+    if(mirrors!=v->mirrors&&!(be32(raw+8)==312&&!be16(raw+12)&&!raw[19]&&
+       v->mirrors>=2&&mirrors==((uint64_t)v->mirrors<<24)))return IFS_FS_CORRUPT;
     if(be64(raw+32)!=v->blocks||be32(raw+56)!=v->block||
-       !be32(raw+60)||be32(raw+60)>8||be64(raw+64)!=v->mirrors)
-        return IFS_FS_CORRUPT;
+       !be32(raw+60)||be32(raw+60)>8)return IFS_FS_CORRUPT;
     /* ReplayTV's bitmapless format needs a separate ownership walk. */
     if(v->bitmap==NONE)return IFS_FS_UNSUPPORTED;
     uint64_t bitmap_bytes=(v->blocks+7)/8;
@@ -262,7 +286,7 @@ static int build_map(const Volume *v,const Node *node,Map *m)
         for(uint32_t i=0;i+1<count;++i){
             const uint8_t *p=raw+off+16+i*16;
             uint64_t at=be64(p),n=be64(p+8);
-            if(!span(v,at,n)||reserved(v,at,n)||!allocated(v,at,n)||
+            if(!span(v,at,n)||reserved(v,at,n)||overlap(at,n,v->root,v->mirrors)||!allocated(v,at,n)||
                n>v->blocks-total)return IFS_FS_CORRUPT;
             if(m->runs==MAX_RUNS)return IFS_FS_UNSUPPORTED;
             for(uint32_t j=0;j<m->runs;++j)

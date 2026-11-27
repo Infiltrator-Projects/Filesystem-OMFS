@@ -22,3 +22,28 @@ jobs:
           make check
           make clean
           make CFLAGS="-O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer" check
+  independent-media:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: Infiltrator-Projects/Libraries
+          ref: 225e640ebed5351b1481bfbeef1a6144ca5146e7
+          path: Libraries
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: bcopeland/omfsprogs
+          ref: e77827eb5520b3e14fa8ed1eb6516f2d998c17e4
+          path: .oracle
+          persist-credentials: false
+      - run: |
+          make carrier
+          bash tests/make-oracle-media.sh .oracle "$RUNNER_TEMP/omfs-media"
+          cc -std=c11 -Wall -Wextra -Werror -ILibraries/include tests/read_oracle.c -ldl -o /tmp/read-oracle
+          cd "$RUNNER_TEMP/omfs-media"
+          sha256sum media.img > before
+          /tmp/read-oracle "$GITHUB_WORKSPACE/build/carrier/OMFS.so" media.img proof.bin
+          /tmp/read-oracle "$GITHUB_WORKSPACE/build/firmware/OMFS.so" media.img proof.bin
+          sha256sum -c before
