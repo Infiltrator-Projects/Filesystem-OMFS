@@ -15,7 +15,11 @@ format logic is used.
 
 This is a development candidate. Byte-authored fixtures cover nested
 names, fragmented reads, sector geometry, corrupt records and lifetime.
-The actual CI result is authoritative. Independent formatter media,
-signed OVMF execution, mirror recovery, bitmapless ReplayTV, global
+Hosted and firmware readers passed sanitizer and independent formatter
+media tests (https://github.com/Infiltrator-Projects/Filesystem-OMFS/actions/runs/45947512074).
+The oracle uses the pinned original formatter and library, with test-only
+build and bitmap-buffer compatibility corrections. The BOOT signed OVMF
+qualification has been added but is not yet verified. Mirror recovery,
+bitmapless ReplayTV, global
 allocation reconciliation, format, mutation, defragmentation and
 release remain unqualified. These operations are not advertised.
