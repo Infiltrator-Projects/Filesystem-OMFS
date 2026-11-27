@@ -282,7 +282,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 31 0 R >>
 endobj
 31 0 obj
-<< /Length 2346 >>
+<< /Length 2322 >>
 stream
 0.06 0.15 0.23 rg 0 768 595 74 re f
 1 1 1 rg BT /F2 10 Tf 43 811 Td (INFILTRATOR / FILESYSTEM ENGINEERING) Tj ET
@@ -290,21 +290,21 @@ BT /F2 22 Tf 43 784 Td (OMFS - technical reference) Tj ET
 0.08 0.14 0.20 rg BT /F2 15 Tf 43 736 Td (12. Reference and test requirements) Tj ET
 0.08 0.14 0.20 rg BT /F3 10 Tf 43 706 Td (Independent references: Linux OMFS disk-format notes at) Tj ET
 0.08 0.14 0.20 rg BT /F3 10 Tf 43 692 Td (https://docs.kernel.org/6.12/filesystems/omfs.html and implementation at) Tj ET
-0.08 0.14 0.20 rg BT /F3 10 Tf 43 678 Td (https://github.com/torvalds/linux/tree/v6.12/fs/omfs . Original reverse-engineering) Tj ET
-0.08 0.14 0.20 rg BT /F3 10 Tf 43 664 Td (utilities: https://bobcopeland.com/karma/ . Test differing metadata and allocation) Tj ET
-0.08 0.14 0.20 rg BT /F3 10 Tf 43 650 Td (block sizes, all-ones sentinels, collision chains, continuation overflow, mirror) Tj ET
-0.08 0.14 0.20 rg BT /F3 10 Tf 43 636 Td (disagreement, CRC failure, invalid total counts and partial last extents. Compare) Tj ET
-0.08 0.14 0.20 rg BT /F3 10 Tf 43 622 Td (files against independent device images and omfsck. The exact directory hash,) Tj ET
-0.08 0.14 0.20 rg BT /F3 10 Tf 43 608 Td (bitmap order, checksum initialisation and mirror write policy need fixture-level) Tj ET
-0.08 0.14 0.20 rg BT /F3 10 Tf 43 594 Td (confirmation before independent writer compatibility is declared. The following) Tj ET
-0.08 0.14 0.20 rg BT /F3 10 Tf 43 580 Td (historical appendices retain earlier provider status without claiming new code or) Tj ET
-0.08 0.14 0.20 rg BT /F3 10 Tf 43 566 Td (qualification.) Tj ET
+0.08 0.14 0.20 rg BT /F3 10 Tf 43 678 Td (https://github.com/torvalds/linux/tree/v6.12/fs/omfs . Original) Tj ET
+0.08 0.14 0.20 rg BT /F3 10 Tf 43 664 Td (reverse-engineering utilities: https://bobcopeland.com/karma/ . Test differing) Tj ET
+0.08 0.14 0.20 rg BT /F3 10 Tf 43 650 Td (metadata and allocation block sizes, all-ones sentinels, collision chains,) Tj ET
+0.08 0.14 0.20 rg BT /F3 10 Tf 43 636 Td (continuation overflow, mirror disagreement, CRC failure, invalid total counts) Tj ET
+0.08 0.14 0.20 rg BT /F3 10 Tf 43 622 Td (and partial last extents. Compare files against independent device images and) Tj ET
+0.08 0.14 0.20 rg BT /F3 10 Tf 43 608 Td (omfsck. The exact directory hash, bitmap order, checksum initialisation and) Tj ET
+0.08 0.14 0.20 rg BT /F3 10 Tf 43 594 Td (mirror write policy need fixture-level confirmation before independent writer) Tj ET
+0.08 0.14 0.20 rg BT /F3 10 Tf 43 580 Td (compatibility is declared. Historical provider status is identified in) Tj ET
+0.08 0.14 0.20 rg BT /F3 10 Tf 43 566 Td (Implementation and qualification boundary.) Tj ET
 0.08 0.14 0.20 rg BT /F3 10 Tf 43 542 Td (The historical source identifies magic 0xc2993d87 and inode marker 0xd2;) Tj ET
 0.08 0.14 0.20 rg BT /F3 10 Tf 43 528 Td (directory/extent offsets 0x1b8/0x1d0 and continuation offset 0x40 must be) Tj ET
 0.08 0.14 0.20 rg BT /F3 10 Tf 43 514 Td (interpreted under the admitted profile.) Tj ET
 0.08 0.14 0.20 rg BT /F3 10 Tf 43 490 Td (Retained source:) Tj ET
-0.08 0.14 0.20 rg BT /F3 10 Tf 43 476 Td (https://github.com/Infiltrator-Projects/Filesystems/blob/101026021d9088d80b7f0f472d) Tj ET
-0.08 0.14 0.20 rg BT /F3 10 Tf 43 462 Td (9061f0e2c688a3/native/filesystems/omfs/linux/omfs_fs.h \(blob 1ff6b9e412\).) Tj ET
+0.08 0.14 0.20 rg BT /F3 10 Tf 43 476 Td (https://github.com/Infiltrator-Projects/Filesystems/blob/101026021d9088d80b7f0f) Tj ET
+0.08 0.14 0.20 rg BT /F3 10 Tf 43 462 Td (472d9061f0e2c688a3/native/filesystems/omfs/linux/omfs_fs.h \(blob 1ff6b9e412\).) Tj ET
 0.2 0.3 0.4 rg BT /F1 9 Tf 43 32 Td (Historical development and engineering reference | 13) Tj ET
 endstream
 endobj
@@ -345,5 +345,5 @@ xref
 trailer
 << /Size 32 /Root 1 0 R >>
 startxref
-22493
+22469
 %%EOF
