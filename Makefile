@@ -12,7 +12,7 @@ build/OMFS.so: $(SRC) Makefile
 	$(CC) $(BASE) $(CFLAGS) -fPIC -fvisibility=hidden -shared -Wl,-z,defs -o $@ $<
 firmware: build/firmware/OMFS.so
 build/firmware/OMFS.so: $(SRC) module/firmware/CMakeLists.txt Makefile
-	cmake -S module/firmware -B build/firmware -DCOMMON_INCLUDE_DIR="$(abspath $(COMMON_INCLUDE))"
+	cmake -S module/firmware -B build/firmware -DCMAKE_C_FLAGS= -DCOMMON_INCLUDE_DIR="$(abspath $(COMMON_INCLUDE))"
 	cmake --build build/firmware
 	test "$$(nm -D --defined-only $@ | awk '{print $$3}')" = infiltrator_filesystem_api_v2
 	test -z "$$(nm -D --undefined-only $@)"
