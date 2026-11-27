@@ -16,6 +16,9 @@ sed -i 's/omfs_info_t info;/omfs_info_t info = { .dev_mutex = PTHREAD_MUTEX_INIT
 sed -i '1i#include <pthread.h>' "$work/create_fs.c"
 sed -i 's/calloc(1, bitmap_size)/calloc(1, (size_t)(first_blk - BITMAP_BLK) * block_size)/' "$work/create_fs.c"
 sed -i 's/i < bsize \* 8; i++, bitmap_blk++/i < bsize; i++, bitmap_blk++/;s/if (size != count)/if ((size_t)blocksize != count)/' "$work/libomfs/omfs.c"
+# The historical userspace type aliases now collide with Linux UAPI
+# declarations pulled in by current libc. Rename aliases, not their widths.
+sed -i -E 's/\b__be(16|32|64)\b/omfs_be\1/g' "$work/libomfs/config.h" "$work/libomfs/omfs_fs.h"
 make -C "$work" mkomfs
 cc -std=gnu11 -D_FILE_OFFSET_BITS=64 -I"$work/libomfs" "$root/tests/oracle-populate.c" "$work/libomfs/libomfs.a" -pthread -o "$work/populate"
 mkdir -p "$out"
