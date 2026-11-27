@@ -23,7 +23,11 @@ make -C "$work" mkomfs
 cc -std=gnu11 -D_FILE_OFFSET_BITS=64 -I"$work/libomfs" "$root/tests/oracle-populate.c" "$work/libomfs/libomfs.a" -pthread -o "$work/populate"
 mkdir -p "$out"
 test ! -e "$out/media.img"
-truncate -s 32M "$out/media.img"
+shift 2
+truncate -s "${OMFS_ORACLE_BYTES:-32M}" "$out/media.img"
 printf 'y\n' | "$work/mkomfs" -b 4096 -c 8 "$out/media.img"
-dd if=/dev/urandom of="$out/proof.bin" bs=1 count=8229 status=none
-"$work/populate" "$out/media.img" "$out/proof.bin"
+if [[ "$#" == 0 ]]; then
+    dd if=/dev/urandom of="$out/proof.bin" bs=1 count=8229 status=none
+    set -- proof.bin "$out/proof.bin"
+fi
+"$work/populate" "$out/media.img" "$@"
