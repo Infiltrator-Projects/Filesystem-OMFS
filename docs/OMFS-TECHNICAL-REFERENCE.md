@@ -8,6 +8,8 @@ SonicBlue's Optimized MPEG File System was used by ReplayTV recorders and the Ri
 
 OMFS distinguishes ordinary allocation blocks from system blocks carrying metadata. They share the same block-address namespace, even if the metadata object uses fewer bytes than an allocated data block. A physical allocation address is multiplied by the normal block size, not the smaller system-record size. Unused space in a smaller system block is not a separate free allocation. The known device profiles commonly use 2048 to 8192-byte blocks; independently verify each supported block-size and mirror configuration. Bound the partition offset, address and length before reading. Metadata and allocation fields are stored big-endian.
 
+The retained Linux header's implementation bounds include 8192-byte blocks and eight-block clusters; those limits are not necessarily universal original-format limits. Validate metadata offsets and continuation ownership before interpreting payload.
+
 ## Superblock field inventory
 
 The superblock's identifying fields begin at byte 256. The 64-bit root-block address is at 256, total allocation-block count at 264, magic 0xC2993D87 at 272, block bytes at 276, metadata mirror count at 280 and system-block bytes at 284. Read at least 288 bytes before interpreting these fields. Require plausible block size, consistent system-block size, a bounded root address and a volume extent within the supplied image. The root metadata record independently repeats important geometry; disagreement must not be silently resolved by picking the more convenient value.
@@ -40,8 +42,14 @@ With 4096-byte blocks, consider an extent at block 100 of length 3 and another a
 
 Allocation must reserve the whole required run and system-block mirror group before metadata publication. Data extension can grow the final run if adjacent blocks are free, or append another extent and possibly allocate a continuation table. Maintain the terminator and file length independently. A defragmenter copies and verifies source bytes into an available destination before publishing new mapping records. The format's CRC and mirrored metadata help detect damage but are not a general transactional journal. Validate interrupted-update ordering, mirror repair and allocation ownership against independent device images before writable qualification.
 
+## Implementation and qualification boundary
+
+The independent provider uses Common V2: https://github.com/Infiltrator-Projects/Libraries/blob/main/docs/FILESYSTEM_COMMON_ABI_V2.md . Negotiate actual operation masks and media profiles. Distinguish unsupported, corrupt, I/O and stale-handle results. Require bounded host I/O, exclusive unmounted ownership and durable flush before mutation. Test Media and Defragmenter consume the same engine, not separate format parsers. Hosted and freestanding binaries, relocation, recovery, BOOT, kernel integration and packages require separate exact-source evidence. Current support belongs to the repository README and qualification records. The intended package paths are /System/Filesystems/ and /System/Resources/Documentation/; the reference is not an installation or release-status claim.
+
 ## Reference and test requirements
 
 Independent references: Linux OMFS disk-format notes at https://docs.kernel.org/6.12/filesystems/omfs.html and implementation at https://github.com/torvalds/linux/tree/v6.12/fs/omfs . Original reverse-engineering utilities: https://bobcopeland.com/karma/ . Test differing metadata and allocation block sizes, all-ones sentinels, collision chains, continuation overflow, mirror disagreement, CRC failure, invalid total counts and partial last extents. Compare files against independent device images and omfsck. The exact directory hash, bitmap order, checksum initialisation and mirror write policy need fixture-level confirmation before independent writer compatibility is declared. The following historical appendices retain earlier provider status without claiming new code or qualification.
 
-The PDF preserves both earlier documents as explicitly historical appendices.
+The historical source identifies magic 0xc2993d87 and inode marker 0xd2; directory/extent offsets 0x1b8/0x1d0 and continuation offset 0x40 must be interpreted under the admitted profile.
+
+Retained source: https://github.com/Infiltrator-Projects/Filesystems/blob/101026021d9088d80b7f0f472d9061f0e2c688a3/native/filesystems/omfs/linux/omfs_fs.h (blob 1ff6b9e412).
