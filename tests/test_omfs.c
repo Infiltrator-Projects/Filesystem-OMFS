@@ -4,6 +4,7 @@
  * noncontiguous extents, nested directories and stale opaque tokens.
  */
 #include <infiltratr/filesystem_module_v2.h>
+#include "../Libraries/tests/filesystem_allocation_pages.h"
 #include <assert.h>
 #include <dlfcn.h>
 #include <stdio.h>
@@ -55,6 +56,10 @@ static int rd(void *c,uint64_t off,void *out,uint32_t n)
 {(void)c;if(fail_read||off>sizeof disk||n>sizeof disk-off||off%sector||n%sector)return -1;memcpy(out,disk+off,n);return 0;}
 static void *alloc(void *c,size_t n){(void)c;if(fail_alloc)return NULL;void *p=malloc(n);if(p)++allocations;return p;}
 static void drop(void *c,void *p){(void)c;if(p){assert(allocations);--allocations;free(p);}}
+static int fixture_allocated(uint64_t block)
+{
+    return !!(blk(2)[block/8] & (1u<<(block%8)));
+}
 int main(int argc,char **argv)
 {
     assert(argc==2);void *lib=dlopen(argv[1],RTLD_NOW|RTLD_LOCAL);if(!lib){puts(dlerror());return 1;}
@@ -71,6 +76,8 @@ int main(int argc,char **argv)
         uint32_t variant=0;assert(core->probe(&h,&variant)==0&&variant==1&&!allocations);
         IfsFsVolumeInfoV2 i={.structure_bytes=sizeof i};void *v=NULL,*other=NULL;
         assert(core->mount(&h,&v,&i)==0&&v&&i.total_bytes==sizeof disk&&i.free_bytes==(N-9)*B);
+        const IfsFsAllocationOpsV2 *allocation=(const void *)ifs_fs_group_v2(api,IFS_FS_GROUP_ALLOCATION);
+        check_allocation_pages(allocation,v,B,h.volume_bytes,i.free_bytes,fixture_allocated);
         assert(core->mount(&h,&other,&i)==0&&other!=v);
         char name[257];IfsFsEntryV2 e={.structure_bytes=sizeof e,.name=name,.name_capacity=sizeof name};
         assert(core->stat(v,"/",&e)==0&&e.type==IFS_FS_ENTRY_DIRECTORY);

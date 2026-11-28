@@ -53,3 +53,7 @@ Independent references: Linux OMFS disk-format notes at https://docs.kernel.org/
 The historical source identifies magic 0xc2993d87 and inode marker 0xd2; directory/extent offsets 0x1b8/0x1d0 and continuation offset 0x40 must be interpreted under the admitted profile.
 
 Retained source: https://github.com/Infiltrator-Projects/Filesystems/blob/101026021d9088d80b7f0f472d9061f0e2c688a3/native/filesystems/omfs/linux/omfs_fs.h (blob 1ff6b9e412).
+
+### Common V2 physical allocation queries
+
+The provider uses the on-disk occupancy bitmap validated at mount. ALLOCATION.MAP returns consecutive partition-relative byte ranges from the requested byte. The geometry beyond the filesystem is reserved. The last range ends at the end of the host partition. A complete scan of the test image reconciles with the mounted free-byte count.

@@ -93,6 +93,12 @@ BT /F2 22 Tf 43 784 Td (OMFS - technical reference) Tj ET
 0.08 0.14 0.20 rg BT /F3 10 Tf 43 636 Td (padding bits and any reserved metadata copies. Preserve the device's bitmap bit) Tj ET
 0.08 0.14 0.20 rg BT /F3 10 Tf 43 622 Td (numbering and allocation convention; verify against an independent formatted image) Tj ET
 0.08 0.14 0.20 rg BT /F3 10 Tf 43 608 Td (before enabling writes.) Tj ET
+0.08 0.14 0.20 rg BT /F2 13 Tf 43 576 Td (Common V2 physical maps) Tj ET
+0.08 0.14 0.20 rg BT /F3 10 Tf 43 553 Td (On bitmap-backed volumes, ALLOCATION.MAP reads the occupancy bits validated at) Tj ET
+0.08 0.14 0.20 rg BT /F3 10 Tf 43 539 Td (mount. A set bit denotes an allocated block. Output ranges cover the host) Tj ET
+0.08 0.14 0.20 rg BT /F3 10 Tf 43 525 Td (partition, including any reserved tail. The qualification fixture compares each) Tj ET
+0.08 0.14 0.20 rg BT /F3 10 Tf 43 511 Td (block with the on-disk bitmap and reconciles free space with the mounted volume) Tj ET
+0.08 0.14 0.20 rg BT /F3 10 Tf 43 497 Td (information.) Tj ET
 0.2 0.3 0.4 rg BT /F1 9 Tf 43 32 Td (Historical development and engineering reference | 6) Tj ET
 
 %%Page
